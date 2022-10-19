@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  zenrows-api:
+    build: .
+    environment:
+      PROXY_HOST: 0.0.0.0
+      PROXY_DBHOST: mysql
+    ports:
+      - 8080:8080
+
+  mysql:
+    image: mariadb:10.7.4
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_DATABASE: zenrows
+      MYSQL_USER: zenrows
+      MYSQL_PASSWORD: zenrows
+      MYSQL_ROOT_PASSWORD: zenrows
+
+volumes:
+  mysql_data:
