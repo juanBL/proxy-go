@@ -1,7 +1,7 @@
 CREATE TABLE users
 (
-    api_key     VARCHAR(255) NOT NULL,
-    expiration date VARCHAR(255) NOT NULL,
+    api_key VARCHAR(255) NOT NULL,
+    expiration_date VARCHAR(255) NOT NULL,
 
     PRIMARY KEY (api_key)
 
