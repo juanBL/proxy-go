@@ -1,23 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
+	"zenrows-proxy/cmd/api/bootstrap"
 )
 
-const httpAddr = ":8080"
-
 func main() {
-	fmt.Println("Server running on", httpAddr)
-
-	srv := gin.New()
-	srv.GET("/health", healthHandler)
-
-	log.Fatal(srv.Run(httpAddr))
-}
-
-func healthHandler(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "everything is oks!")
+	if err := bootstrap.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
