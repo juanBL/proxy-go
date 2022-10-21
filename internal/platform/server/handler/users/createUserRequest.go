@@ -3,7 +3,6 @@ package users
 import (
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -46,7 +45,7 @@ func CreateUserRequestHandler(commandBus command.Bus) gin.HandlerFunc {
 				ctx.JSON(http.StatusBadRequest, err.Error())
 				return
 			default:
-				ctx.JSON(http.StatusInternalServerError, "not user find with this apikey")
+				ctx.JSON(http.StatusInternalServerError, "error")
 				return
 			}
 		}
@@ -54,7 +53,8 @@ func CreateUserRequestHandler(commandBus command.Bus) gin.HandlerFunc {
 		if err == nil {
 			req, err := http.NewRequest("GET", req.Url, nil)
 			if err != nil {
-				log.Fatalln(err)
+				ctx.JSON(http.StatusInternalServerError, "proxy error")
+				return
 			}
 
 			for i, value := range requestHeaders {
@@ -66,14 +66,16 @@ func CreateUserRequestHandler(commandBus command.Bus) gin.HandlerFunc {
 			resp, err := client.Do(req)
 
 			if err != nil {
-				log.Fatalln(err)
+				ctx.JSON(http.StatusInternalServerError, "proxy error")
+				return
 			}
 
 			defer resp.Body.Close()
 
 			b, err := io.ReadAll(resp.Body)
 			if err != nil {
-				log.Fatalln(err)
+				ctx.JSON(http.StatusInternalServerError, "proxy error")
+				return
 			}
 
 			ctx.Status(http.StatusCreated)
