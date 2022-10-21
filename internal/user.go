@@ -9,6 +9,7 @@ import (
 )
 
 var ErrInvalidApiKey = errors.New("invalid api key")
+var ErrUserNotFound = errors.New("user not found")
 
 type ApiKey struct {
 	value string
@@ -30,6 +31,7 @@ func (apiKey ApiKey) String() string {
 }
 
 var ErrEmptyExpirationDate = errors.New("the field expiration date can not be empty")
+var ErrExpirationDate = errors.New("error user expired")
 
 type ExpirationDate struct {
 	value string
@@ -58,7 +60,7 @@ type User struct {
 
 type UserRepository interface {
 	SearchAll(ctx context.Context) ([]User, error)
-	FindByApiKey(ctx context.Context, apiKey ApiKey) ([]User, error)
+	FindByApiKey(ctx context.Context, apiKey ApiKey) (User, error)
 	Save(ctx context.Context, user User) error
 }
 

@@ -10,13 +10,11 @@ import (
 	proxy "zenrows-proxy/internal"
 )
 
-// UserRepository is a MySQL proxy.UserRepository implementation.
 type UserRepository struct {
 	db        *sql.DB
 	dbTimeout time.Duration
 }
 
-// NewUserRepository initializes a MariaDB-based implementation of proxy.UserRepository.
 func NewUserRepository(db *sql.DB, dbTimeout time.Duration) *UserRepository {
 	return &UserRepository{
 		db:        db,
@@ -42,36 +40,23 @@ func (r *UserRepository) Save(ctx context.Context, user proxy.User) error {
 	return nil
 }
 
-func (r *UserRepository) FindByApiKey(ctx context.Context, apiKey proxy.ApiKey) (users []proxy.User, err error) {
+func (r *UserRepository) FindByApiKey(_ context.Context, apiKey proxy.ApiKey) (user proxy.User, err error) {
 	userSQLStruct := sqlbuilder.NewStruct(new(sqlUser))
 	selectBuilder := userSQLStruct.SelectFrom(sqlUserTable)
 	selectBuilder = selectBuilder.Where(selectBuilder.Equal("api_key", apiKey.String()))
 
 	query, args := selectBuilder.Build()
 
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	row := r.db.QueryRow(query, args...)
+
+	var sqlUser sqlUser
+	err = row.Scan(userSQLStruct.Addr(&sqlUser)...)
+
+	newUser, _ := proxy.NewUser(sqlUser.ApiKey, sqlUser.ExpirationDate)
 	if err != nil {
-		return nil, err
+		err = proxy.ErrUserNotFound
 	}
-	defer func() { _ = rows.Close() }()
-
-	users = []proxy.User{}
-
-	for rows.Next() {
-		var sqlUser sqlUser
-		err := rows.Scan(userSQLStruct.Addr(&sqlUser)...)
-
-		if err != nil {
-			return nil, err
-		}
-		user, err := proxy.NewUser(sqlUser.ApiKey, sqlUser.ExpirationDate)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, user)
-
-	}
-	return users, nil
+	return newUser, err
 }
 
 func (r *UserRepository) SearchAll(ctx context.Context) (users []proxy.User, err error) {

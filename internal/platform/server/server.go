@@ -48,7 +48,7 @@ func (s *Server) registerRoutes() {
 	s.engine.Use(recovery.Middleware(), logging.Middleware())
 
 	s.engine.GET("/health", health.CheckHandler())
-	s.engine.GET("/users", users.FindUserByApiKeyHandler(s.queryBus))
+	s.engine.POST("/proxy", users.CreateUserRequestHandler(s.commandBus))
 	s.engine.POST("/users", users.CreateUserHandler(s.commandBus))
 }
 

@@ -6,7 +6,8 @@ import (
 )
 
 type UserService struct {
-	userRepository proxy.UserRepository
+	userRepository        proxy.UserRepository
+	userRequestRepository proxy.UserRequestRepository
 }
 
 func NewUserService(userRepository proxy.UserRepository) UserService {
@@ -15,7 +16,7 @@ func NewUserService(userRepository proxy.UserRepository) UserService {
 	}
 }
 
-func (s UserService) FindByApiKey(ctx context.Context, apiKey string) ([]proxy.User, error) {
+func (s UserService) FindByApiKey(ctx context.Context, apiKey string) (proxy.User, error) {
 	ak, _ := proxy.NewApiKey(apiKey)
 	return s.userRepository.FindByApiKey(ctx, ak)
 }

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+	"zenrows-proxy/internal/createUserRequest"
 	"zenrows-proxy/internal/creating"
 	"zenrows-proxy/internal/findByApiKey"
 	"zenrows-proxy/internal/platform/bus/inmemory"
@@ -35,15 +36,17 @@ func Run() error {
 	)
 
 	userRepository := mysql.NewUserRepository(db, cfg.DbTimeout)
+	userRequestRepository := mysql.NewUserRequestRepository(db, cfg.DbTimeout)
 
 	creatingUserService := creating.NewUserService(userRepository, eventBus)
 	getUserService := findByApiKey.NewUserService(userRepository)
+	createUserRequestService := createUserRequest.NewUserRequestService(userRequestRepository)
 
 	createUserCommandHandler := creating.NewUserCommandHandler(creatingUserService)
-	getUserQueryHandler := findByApiKey.NewUserFindByApiKeyQueryHandler(getUserService)
+	createUserRequestCommandHandler := createUserRequest.NewUserRequestCreatorCommandHandler(getUserService, createUserRequestService)
 
 	commandBus.Register(creating.UserCommandType, createUserCommandHandler)
-	queryBus.Register(findByApiKey.UserQueryType, getUserQueryHandler)
+	commandBus.Register(createUserRequest.UserRequestCommandType, createUserRequestCommandHandler)
 
 	ctx, srv := server.New(context.Background(), cfg.Host, cfg.Port, cfg.ShutdownTimeout, commandBus, queryBus)
 	return srv.Run(ctx)

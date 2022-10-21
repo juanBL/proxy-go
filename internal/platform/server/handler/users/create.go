@@ -10,14 +10,14 @@ import (
 	"zenrows-proxy/kit/command"
 )
 
-type createUserRequest struct {
+type createRequest struct {
 	ApiKey         string `json:"api_key" binding:"required"`
 	ExpirationDate string `json:"expiration_date" binding:"required"`
 }
 
 func CreateUserHandler(commandBus command.Bus) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req createUserRequest
+		var req createRequest
 		if err := ctx.BindJSON(&req); err != nil {
 			ctx.JSON(http.StatusBadRequest, err.Error())
 			return
